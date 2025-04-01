@@ -8,10 +8,11 @@ import { ThemeProvider } from 'next-themes'
 import './App.css'
 import Register from './pages/Register'
 import { Toaster } from '@/components/ui/sonner'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
+// import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Sale from './pages/Sale'
 import Clients from './pages/Clients'
 import Suppliers from './pages/Suppliers'
+import { useAuthStore } from './store/authStore'
 
 type Credential = {
   id: number
@@ -20,7 +21,14 @@ type Credential = {
 }
 
 function App() {
-  const {isAuthenticated, loading} = useAuth()
+  const checkAuth = useAuthStore((state) => state.checkAuth)
+  const { isAuthenticated, loading } = useAuthStore()
+
+  useEffect(() => {
+    if (!isAuthenticated && !loading) {
+      checkAuth()
+    }
+  }, [isAuthenticated, loading])
 
   useEffect(() => {
     const checkDBCredentials = async () => {
@@ -54,7 +62,8 @@ function App() {
       }
     }
     if (
-      !isAuthenticated && !loading &&
+      !isAuthenticated &&
+      !loading &&
       window.location.pathname !== '/register' &&
       window.location.pathname !== '/login'
     ) {
@@ -64,28 +73,24 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme='light'>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes */}
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
 
-            {/* Protected routes */}
-            <Route
-              element={<ProtectedRoute />}
-            >
-              <Route path='/' element={<Home />} />
-              <Route path='/sale' element={<Sale />} />
-              <Route path='/clients' element={<Clients />} />
-              <Route path='/suppliers' element={<Suppliers />} />
-              {/* <Route path="/dashboard" element={<Dashboard />} /> */}
-              {/* <Route path="/profile" element={<Profile />} /> */}
-            </Route>
-          </Routes>
-        </BrowserRouter>
-        <Toaster position='top-center' />
-      </AuthProvider>
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path='/' element={<Home />} />
+            <Route path='/sale' element={<Sale />} />
+            <Route path='/clients' element={<Clients />} />
+            <Route path='/suppliers' element={<Suppliers />} />
+            {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+            {/* <Route path="/profile" element={<Profile />} /> */}
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      <Toaster position='top-center' />
     </ThemeProvider>
   )
 }

@@ -1,13 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
 import Navbar from './Navbar'
+import { useAuthStore } from '@/store/authStore'
 
 type ProtectedRouteProps = {
   redirectPath?: string
 }
 
 function ProtectedRoute({ redirectPath = '/login' }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuth()
+  const { loading, isAuthenticated } = useAuthStore()
   if (!isAuthenticated && !loading) {
     return <Navigate to={redirectPath} replace />
   }
